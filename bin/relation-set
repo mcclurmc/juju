@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+
+# We avoid using PYTHONPATH because it can cause side effects on hook execution
+import os, sys
+
+if "JUJU_PYTHONPATH" in os.environ:
+    sys.path[:0] = filter(None, os.environ["JUJU_PYTHONPATH"].split(":"))
+
+from juju.hooks.commands import relation_set
+
+if __name__ == '__main__':
+    relation_set()

@@ -1,0 +1,3 @@
+#!/bin/bash
+juju-log "Stopping mysql service"
+/etc/init.d/mysql stop

@@ -1,0 +1,100 @@
+#!/bin/bash
+
+set -eu # -x for verbose logging to juju debug-log
+
+UPLOAD_PATH="/var/www/wp-uploads"
+
+hostname=`unit-get public-address`
+juju-log "Retrieved hostname: $hostname"
+
+# Check we haven't already been setup.
+config_file_path="/etc/wordpress/config-$hostname.php"
+if [ -f "$config_file_path" ] ; then
+    juju-log "Wordpress for site $config_file_path already Configured, exiting"
+    echo "Already Configured, Exiting"
+    exit 0 # already setup
+fi
+
+# Get the database settings; if not set, wait for this hook to be
+# invoked again
+database=`relation-get database`
+if [ -z "$database" ] ; then
+    exit 0 # wait for future handshake from database service unit
+fi
+
+# Our protocol on this interface ensures that all or none of the
+# settings are set. But we can verify the setting or the values if
+# more error checking if desired.
+user=`relation-get user`
+password=`relation-get password`
+host=`relation-get private-address`
+
+# Create an internal secret key for wordpress; this is unrelated to
+# the password generated for the admin user of wordpress
+secret_key=`pwgen 10 1`
+
+juju-log "Creating appropriate upload paths and directories"
+# Setup appropriate upload paths and directories
+ln -s /usr/share/wordpress "/var/www/$hostname"
+mkdir -p $UPLOAD_PATH
+mkdir -p "$UPLOAD_PATH/$hostname"
+chown -R root:www-data $UPLOAD_PATH
+chmod 0744 $UPLOAD_PATH
+chmod 0770 "$UPLOAD_PATH/$hostname"
+chown -R root:www-data "/var/www/$hostname/wp-content"
+
+juju-log "Writing wordpress config file $config_file_path"
+# Write the wordpress config
+cat > $config_file_path <<EOF
+<?php
+define('DB_NAME', '$database');
+define('DB_USER', '$user');
+define('DB_PASSWORD', '$password');
+define('DB_HOST', '$host');
+define('SECRET_KEY', '$secret_key');
+
+#This will disable the update notification.
+define('WP_CORE_UPDATE', false);
+
+\$table_prefix  = 'wp_';
+\$server = '$host';
+\$loginsql = '$user';
+\$passsql = '$password';
+\$base = '$database';
+\$upload_path = '/var/www/wp-uploads/$hostname';
+\$upload_url_path = 'http://$hostname/wp-uploads';
+?>
+EOF
+chmod 0644 $config_file_path
+
+# Write the apache config
+# XXX a future branch will change this to use augtool
+apache_config_file_path="/etc/apache2/sites-available/$hostname"
+juju-log "Writing apache config file $apache_config_file_path"
+cat > $apache_config_file_path <<EOF
+<VirtualHost *:80>
+  ServerName $hostname
+  DocumentRoot /var/www/$hostname
+  Options All
+  ErrorLog /var/log/apache2/wp-error.log
+  TransferLog /var/log/apache2/wp-access.log
+  # Store uploads in /var/www/wp-uploads/$0
+  RewriteEngine On
+  RewriteRule ^/wp-uploads/(.*)$ /var/www/wp-uploads/%%{HTTP_HOST}/\$1
+</VirtualHost>
+EOF
+chmod 0644 $apache_config_file_path
+
+# Configure apache
+juju-log "Enabling apache modules: rewrite, vhost_alias"
+a2enmod rewrite
+a2enmod vhost_alias
+juju-log "Enabling apache site: $hostname"
+a2ensite $hostname
+
+# Restart apache
+juju-log "Restarting apache2 service"
+/etc/init.d/apache2 restart
+
+# Make it publicly visible, once the wordpress service is exposed
+open-port 80/tcp

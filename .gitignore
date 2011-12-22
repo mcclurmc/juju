@@ -1,0 +1,7 @@
+.bzr
+/debian/files
+/docs/build
+/docs/source/generated
+/_trial_temp
+/tags
+zookeeper.log

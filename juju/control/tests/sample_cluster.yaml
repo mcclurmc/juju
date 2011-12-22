@@ -1,0 +1,60 @@
+
+machines:
+  0: {dns-name: ec2-50-19-158-109.compute-1.amazonaws.com, instance-id: i-215dd84f}
+  1: {dns-name: ec2-50-17-16-228.compute-1.amazonaws.com, instance-id: i-8d58dde3}
+  2: {dns-name: ec2-72-44-49-114.compute-1.amazonaws.com, instance-id: i-9558ddfb}
+  3: {dns-name: ec2-50-19-47-106.compute-1.amazonaws.com, instance-id: i-6d5bde03}
+  4: {dns-name: ec2-174-129-132-248.compute-1.amazonaws.com, instance-id: i-7f5bde11}
+  5: {dns-name: ec2-50-19-152-136.compute-1.amazonaws.com, instance-id: i-755bde1b}
+  6: {dns-name: ec2-50-17-168-124.compute-1.amazonaws.com, instance-id: i-4b5bde25}
+services:
+  demo-wiki:
+    charm: local:mediawiki-62
+    relations: {cache: wiki-cache, db: wiki-db, website: wiki-balancer}
+    units:
+      demo-wiki/0:
+        machine: 2
+        relations:
+          cache: {state: up}
+          db: {state: up}
+          website: {state: up}
+        state: started
+      demo-wiki/1:
+        machine: 6
+        relations:
+          cache: {state: up}
+          db: {state: up}
+          website: {state: up}
+        state: started
+  wiki-balancer:
+    charm: local:haproxy-13
+    relations: {reverseproxy: demo-wiki}
+    units:
+      wiki-balancer/0:
+        machine: 4
+        relations:
+          reverseproxy: {state: up}
+        state: started
+  wiki-cache:
+    charm: local:memcached-10
+    relations: {cache: demo-wiki}
+    units:
+      wiki-cache/0:
+        machine: 3
+        relations:
+          cache: {state: up}
+        state: started
+      wiki-cache/1:
+        machine: 5
+        relations:
+          cache: {state: up}
+        state: started
+  wiki-db:
+    charm: local:mysql-93
+    relations: {db: demo-wiki}
+    units:
+      wiki-db/0:
+        machine: 1
+        relations:
+          db: {state: up}
+        state: started

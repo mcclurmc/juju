@@ -1,0 +1,16 @@
+lucid	server	release	20100427.1	ebs	amd64	ap-southeast-1	ami-77f28d25	aki-a9f38cfb	
+lucid	server	release	20100427.1	ebs	i386	ap-southeast-1	ami-4df28d1f	aki-bdf38cef	
+lucid	server	release	20100427.1	instance-store	amd64	ap-southeast-1	ami-57f28d05	aki-a9f38cfb	
+lucid	server	release	20100427.1	instance-store	i386	ap-southeast-1	ami-a5f38cf7	aki-bdf38cef	
+lucid	server	release	20100427.1	ebs	amd64	eu-west-1	ami-ab4d67df	aki-cb4d67bf	
+lucid	server	release	20100427.1	ebs	i386	eu-west-1	ami-a94d67dd	aki-c34d67b7	
+lucid	server	release	20100427.1	instance-store	amd64	eu-west-1	ami-a54d67d1	aki-cb4d67bf	
+lucid	server	release	20100427.1	instance-store	i386	eu-west-1	ami-cf4d67bb	aki-c34d67b7	
+lucid	server	release	20100427.1	ebs	amd64	us-east-1	ami-4b4ba522	aki-0b4aa462	
+lucid	server	release	20100427.1	ebs	i386	us-east-1	ami-714ba518	aki-754aa41c	
+lucid	server	release	20100427.1	instance-store	amd64	us-east-1	ami-fd4aa494	aki-0b4aa462	
+lucid	server	release	20100427.1	instance-store	i386	us-east-1	ami-2d4aa444	aki-754aa41c	
+lucid	server	release	20100427.1	ebs	amd64	us-west-1	ami-d197c694	aki-c397c686	
+lucid	server	release	20100427.1	ebs	i386	us-west-1	ami-cb97c68e	aki-3197c674	
+lucid	server	release	20100427.1	instance-store	amd64	us-west-1	ami-c997c68c	aki-c397c686	
+lucid	server	release	20100427.1	instance-store	i386	us-west-1	ami-c597c680	aki-3197c674	

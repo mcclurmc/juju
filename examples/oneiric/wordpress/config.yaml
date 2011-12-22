@@ -1,0 +1,7 @@
+options:
+  plugin:
+    description: |
+      The URL of a wordpress plugin which will be installed and made available in the Admin UI.
+      http://downloads.wordpress.org/plugin/buddypress.1.2.8.zip is a valid example.
+    type: string
+

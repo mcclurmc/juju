@@ -1,0 +1,24 @@
+Examples
+========
+
+
+These are some example charms that can be deployed together to create some connected services.
+
+Many more charms of greater functionality and utility exist in the Principia project, which
+currently serves as a clearinghouse for juju charms.
+
+http://launchpad.net/principia
+
+
+Deploying
+=========
+
+As an example of deploying these sample charms as services and connectinng them.
+
+  $ juju bootstrap
+  $ juju deploy --repository=examples local:mysql
+  $ juju deploy --repository=examples local:wordpress
+  $ juju add-relation wordpress mysql
+  $ juju status
+
+The status command will show the address of the newly deployed wordpress service.

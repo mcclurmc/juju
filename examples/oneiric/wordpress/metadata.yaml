@@ -1,0 +1,10 @@
+name: wordpress
+summary: "WordPress blog"
+description: |
+    Installs WordPress package (wordpress). Upon the database provider
+    providing the required database, and the relation settings
+    necessary to access it, completes the configuration of WordPress
+    and makes it available on the web.
+requires:
+  db:
+    interface: mysql

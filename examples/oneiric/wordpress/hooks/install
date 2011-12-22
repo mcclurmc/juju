@@ -1,0 +1,6 @@
+#!/bin/bash
+
+juju-log "Installing wordpress, pwgen via apt-get"
+set -eu # -x for verbose logging to juju debug-log
+
+apt-get -y install wordpress pwgen unzip

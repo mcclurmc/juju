@@ -1,0 +1,17 @@
+name: mysql
+summary: "MySQL relational database provider"
+description: |
+    Installs and configures the MySQL package (mysqldb), then runs it.
+
+    Upon a consuming service establishing a relation, creates a new
+    database for that service, if the database does not yet
+    exist. Publishes the following relation settings for consuming
+    services:
+
+      database: database name
+      user: user name to access database
+      password: password to access the database
+      host: local hostname
+provides:
+  db:
+    interface: mysql

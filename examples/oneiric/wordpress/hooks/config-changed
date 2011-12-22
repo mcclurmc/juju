@@ -1,0 +1,19 @@
+#!/bin/bash
+
+hostname=`unit-get public-address`
+plugin_dir="/var/www/$hostname/wp-content/plugins"
+plugin_url=`config-get plugin`
+
+base_plugin=`basename ${plugin_url}`
+
+cd /tmp
+
+curl -O ${plugin_url}
+
+if [ $? = 0 ]; then
+    cd ${plugin_dir}
+    unzip /tmp/${base_plugin}
+else
+    juju-log -l WARNING "Unable to fetch ${plugin_url}"
+
+fi

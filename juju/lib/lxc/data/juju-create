@@ -1,0 +1,148 @@
+#!/bin/bash
+set -x
+
+setup_apt_cache()
+{
+# We ask the host to run apt-cache-server by default speeding the deployment of n units
+# significantly. (and useful in repeated development runs)
+    cat <<EOF >> /etc/apt/apt.conf.d/02juju-apt-proxy
+Acquire::http { Proxy "http://192.168.122.1:3142"; };
+EOF
+
+    chmod a+r /etc/apt/apt.conf.d/02juju-apt-proxy
+
+    # explicitly update the cache w/ apt-cache inplace
+    apt-get update
+}
+
+setup_networking()
+{
+    # Use dnsmasq to resolve names from the bridge
+    # This script executes from a chroot, so directly modify the output file.
+    cat <<EOF > /etc/resolvconf/run/resolv.conf
+nameserver 192.168.122.1
+EOF
+
+    cat <<EOF > /etc/resolvconf/resolv.conf.d/base
+nameserver 192.168.122.1
+EOF
+
+    # By listing the container name first we can expect hostname and
+    # hostname -f to return the routable name
+    # note that lxc-clone will overwrite this
+    cat <<EOF >/etc/hosts
+127.0.0.1 $JUJU_CONTAINER_NAME localhost
+EOF
+}
+
+
+setup_users()
+{
+    id ubuntu
+    if [ $? == 0 ]; then
+        return 0
+    fi
+
+    # add the ubuntu user and allow for ssh
+    adduser ubuntu --disabled-password --shell /bin/bash --gecos ""
+
+    # SSH access
+    if [ -n "$JUJU_PUBLIC_KEY" ]; then
+        mkdir /home/ubuntu/.ssh
+        chmod 700 /home/ubuntu/.ssh
+        echo $JUJU_PUBLIC_KEY >> /home/ubuntu/.ssh/authorized_keys
+        chmod 700 /home/ubuntu/.ssh/authorized_keys
+        chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+    fi
+
+   # add to sudoers
+    cat <<EOF > /etc/sudoers.d/lxc
+ubuntu ALL=(ALL:ALL) NOPASSWD: ALL
+EOF
+    chmod 0440 /etc/sudoers.d/lxc
+
+   # disable root ssh logins
+    sed -i "s/PermitRootLogin yes/PermitRootLogin no/" /etc/ssh/sshd_config
+
+}
+
+
+setup_juju()
+{
+    if [ ! -e /var/lib/juju ]; then
+        mkdir /var/lib/juju
+    fi
+
+    if [ ! -e /var/log/juju ]; then
+        mkdir /var/log/juju
+    fi
+
+    if [ $JUJU_ORIGIN = "ppa" ]; then
+        echo "Using juju PPA for container"
+    elif [[ $JUJU_ORIGIN = lp:* ]]; then
+        echo "Using juju branch" $JUJU_ORIGIN
+    elif [ $JUJU_ORIGIN = "distro" ]; then
+        echo "Using juju distribution packages"
+    else
+        echo "Unknown juju origin policy $JUJU_ORIGIN: expected [ppa|branch|disto]"
+        exit 1
+    fi
+
+    export DEBIAN_FRONTEND=noninteractive
+    APT_OPTIONS="-o Dpkg::Options::= --force-confnew --force-yes -fuy"
+
+    echo "Setting up juju in container"
+    apt-get install $APT_OPTIONS bzr tmux sudo python-software-properties python-yaml
+
+    if [ $JUJU_ORIGIN = "ppa" ]; then
+        # the echo forces an enter to get around the interactive
+        # prompt in apt-add-repository
+        echo y | apt-add-repository ppa:juju/pkgs
+        apt-get update
+        apt-get install $APT_OPTIONS juju python-txzookeeper
+    elif [[ $JUJU_ORIGIN = lp:* ]]; then
+        apt-get install $APT_OPTIONS python-txzookeeper python-setuptools
+        mkdir /usr/lib/juju
+        # light weight checkout is significantly faster, no history though
+        bzr co --lightweight $JUJU_ORIGIN /usr/lib/juju/juju
+        bash -c "cd /usr/lib/juju/juju && sudo python setup.py develop"
+        chmod -R a+r /usr/lib/juju
+    elif [ $JUJU_ORIGIN = "distro" ]; then
+        apt-get install --force-yes -y juju python-txzookeeper
+    fi
+
+}
+
+# load configuration
+source /etc/juju/juju.conf
+
+if [ -z "$JUJU_ORIGIN" ]; then
+    echo "JUJU_ORIGIN must be set to a supported policy"
+    exit 1
+fi
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script should be run as 'root'"
+    exit 1
+fi
+
+if [ -z "$JUJU_CONTAINER_NAME" ]; then
+    echo "JUJU_CONTAINER_NAME is required"
+    exit 1
+fi
+
+if [ -z "$JUJU_PUBLIC_KEY" ]; then
+    echo "Without JUJU_PUBLIC_KEY you will not have ssh access to your container"
+fi
+
+
+if [ "$(id -u)" != "0" ]; then
+    echo "This script should be run as 'root'"
+    exit 1
+fi
+
+setup_apt_cache
+setup_networking
+setup_juju
+# setup_juju ensures sudo is installed which is needed for setup_users
+setup_users

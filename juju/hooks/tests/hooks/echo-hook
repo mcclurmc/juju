@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo $MESSAGE
+juju-log -l ERROR $ERROR
+juju-log $DEFAULT

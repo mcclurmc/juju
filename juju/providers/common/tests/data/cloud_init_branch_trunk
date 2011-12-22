@@ -1,0 +1,17 @@
+#cloud-config
+apt-update: true
+apt-upgrade: true
+apt_sources:
+- {source: 'ppa:juju/pkgs'}
+machine-data: {juju-provider-type: dummy, juju-zookeeper-hosts: 'cotswold:2181,longleat:2181',
+  machine-id: passport}
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+packages: [bzr, byobu, tmux, python-setuptools, python-twisted, python-argparse, python-txaws,
+  python-zookeeper]
+runcmd: [sudo apt-get install -y python-txzookeeper, sudo mkdir -p /usr/lib/juju,
+  'cd /usr/lib/juju && sudo /usr/bin/bzr co lp:juju juju',
+  cd /usr/lib/juju/juju && sudo python setup.py develop, sudo mkdir -p /var/lib/juju,
+  sudo mkdir -p /var/log/juju, 'JUJU_MACHINE_ID=passport JUJU_ZOOKEEPER=cotswold:2181,longleat:2181
+    python -m juju.agents.machine -n --logfile=/var/log/juju/machine-agent.log
+    --pidfile=/var/run/juju/machine-agent.pid']
+ssh_authorized_keys: [chubb]

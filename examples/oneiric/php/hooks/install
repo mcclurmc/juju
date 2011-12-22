@@ -1,0 +1,49 @@
+#!/bin/bash
+
+juju-log "Installing php5 via apt-get"
+set -eu # -x for verbose logging to juju debug-log
+
+apt-get -y install php5
+
+# Create an internal secret key for wordpress; this is unrelated to
+# the password generated for the admin user of wordpress
+hostname=`unit-get public-address`
+
+SITE_PATH="/var/www/$hostname"
+
+
+juju-log "Creating appropriate upload paths and directories"
+# Setup appropriate upload paths and directories
+mkdir -p $SITE_PATH
+chown -R root:www-data $SITE_PATH
+chmod -R a+rw $SITE_PATH
+chmod a+x $SITE_PATH
+
+# Write the apache config
+# XXX a future branch will change this to use augtool
+apache_config_file_path="/etc/apache2/sites-available/$hostname"
+juju-log "Writing apache config file $apache_config_file_path"
+cat > $apache_config_file_path <<EOF
+<VirtualHost *:80>
+  ServerName $hostname
+  DocumentRoot /var/www/$hostname
+  Options All
+  ErrorLog /var/log/apache2/$hostname-error.log
+  TransferLog /var/log/apache2/$hostname-access.log
+  <FilesMatch \.php$>
+    SetHandler application/x-httpd-php
+  </FilesMatch>
+</VirtualHost>
+EOF
+chmod 0644 $apache_config_file_path
+
+# Configure apache
+juju-log "Enabling apache modules: rewrite, vhost_alias"
+a2enmod rewrite
+a2enmod vhost_alias
+juju-log "Enabling apache site: $hostname"
+a2ensite $hostname
+
+# Restart apache
+juju-log "Restarting apache2 service"
+/etc/init.d/apache2 restart

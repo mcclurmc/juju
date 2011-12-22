@@ -1,0 +1,21 @@
+natty	server	release	20110426	ebs	amd64	ap-northeast-1	ami-dab812db	aki-d409a2d5		paravirtual
+natty	server	release	20110426	ebs	i386	ap-northeast-1	ami-d8b812d9	aki-d209a2d3		paravirtual
+natty	server	release	20110426	instance-store	amd64	ap-northeast-1	ami-a4b812a5	aki-d409a2d5		paravirtual
+natty	server	release	20110426	instance-store	i386	ap-northeast-1	ami-46b81247	aki-d209a2d3		paravirtual
+natty	server	release	20110426	ebs	amd64	ap-southeast-1	ami-60582132	aki-11d5aa43		paravirtual
+natty	server	release	20110426	ebs	i386	ap-southeast-1	ami-62582130	aki-13d5aa41		paravirtual
+natty	server	release	20110426	instance-store	amd64	ap-southeast-1	ami-aa5920f8	aki-11d5aa43		paravirtual
+natty	server	release	20110426	instance-store	i386	ap-southeast-1	ami-c0592092	aki-13d5aa41		paravirtual
+natty	server	release	20110426	ebs	amd64	eu-west-1	ami-379ea943	aki-4feec43b		paravirtual
+natty	server	release	20110426	ebs	i386	eu-west-1	ami-359ea941	aki-4deec439		paravirtual
+natty	server	release	20110426	instance-store	amd64	eu-west-1	ami-619ea915	aki-4feec43b		paravirtual
+natty	server	release	20110426	instance-store	i386	eu-west-1	ami-1b9fa86f	aki-4deec439		paravirtual
+natty	server	release	20110426	ebs	amd64	us-east-1	ami-1cad5275			hvm
+natty	server	release	20110426	ebs	amd64	us-east-1	ami-1aad5273	aki-427d952b		paravirtual
+natty	server	release	20110426	ebs	i386	us-east-1	ami-06ad526f	aki-407d9529		paravirtual
+natty	server	release	20110426	instance-store	amd64	us-east-1	ami-68ad5201	aki-427d952b		paravirtual
+natty	server	release	20110426	instance-store	i386	us-east-1	ami-e2af508b	aki-407d9529		paravirtual
+natty	server	release	20110426	ebs	amd64	us-west-1	ami-136f3c56	aki-9ba0f1de		paravirtual
+natty	server	release	20110426	ebs	i386	us-west-1	ami-116f3c54	aki-99a0f1dc		paravirtual
+natty	server	release	20110426	instance-store	amd64	us-west-1	ami-0b6f3c4e	aki-9ba0f1de		paravirtual
+natty	server	release	20110426	instance-store	i386	us-west-1	ami-596f3c1c	aki-99a0f1dc		paravirtual

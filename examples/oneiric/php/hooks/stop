@@ -1,0 +1,3 @@
+#!/bin/bash
+juju-log "Stopping apache"
+/etc/init.d/apache2 stop

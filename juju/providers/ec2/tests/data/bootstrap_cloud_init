@@ -1,0 +1,16 @@
+#cloud-config
+apt-update: true
+apt-upgrade: true
+machine-data: {juju-provider-type: ec2, juju-zookeeper-hosts: 'localhost:2181',
+  machine-id: '0'}
+output: {all: '| tee -a /var/log/cloud-init-output.log'}
+packages: [bzr, byobu, tmux, python-setuptools, python-twisted, python-argparse, python-txaws,
+  python-zookeeper, default-jre-headless, zookeeper, zookeeperd]
+runcmd: [sudo apt-get -y install juju, sudo mkdir -p /var/lib/juju, sudo mkdir
+    -p /var/log/juju, 'juju-admin initialize --instance-id=$(curl http://169.254.169.254/1.0/meta-data/instance-id)
+    --admin-identity=admin:JbJ6sDGV37EHzbG9FPvttk64cmg= --provider-type=ec2', 'JUJU_MACHINE_ID=0 JUJU_ZOOKEEPER=localhost:2181
+    python -m juju.agents.machine -n --logfile=/var/log/juju/machine-agent.log
+    --pidfile=/var/run/juju/machine-agent.pid', 'JUJU_ZOOKEEPER=localhost:2181
+    python -m juju.agents.provision -n --logfile=/var/log/juju/provision-agent.log
+    --pidfile=/var/run/juju/provision-agent.pid']
+ssh_authorized_keys: [zebra]

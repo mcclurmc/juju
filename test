@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+import os
+import sys
+
+from twisted.scripts.trial import run
+
+from juju.tests.common import zookeeper_test_context
+
+
+FUNCTIONAL = '--functional'
+
+def main(args):
+    if not "ZOOKEEPER_PATH" in  os.environ:
+        # Look for a system install of ZK
+        env_path = "/etc/zookeeper/conf/environment"
+        if os.path.exists(env_path):
+            print "Using system zookeeper classpath from %s" % env_path
+            os.environ["ZOOKEEPER_PATH"] = "system"
+        else:
+            print ("Environment variable ZOOKEEPER_PATH must be defined "
+                   "and should point to directory of Zookeeper installation")
+            exit()
+
+    matched = [arg for arg in args if arg.startswith("juju")]
+
+    if FUNCTIONAL in sys.argv:
+        sys.argv.remove(FUNCTIONAL)
+        sys.argv.append("juju.ftests")
+    elif matched:
+        pass
+    else:
+        packages = [p for p in os.listdir("juju") \
+                    if os.path.isdir("juju%s%s"%(os.sep, p))]
+        packages.remove("ftests")
+        sys.argv.extend(["juju.%s"%p for p in packages])
+
+    with zookeeper_test_context(
+            os.environ["ZOOKEEPER_PATH"],
+            os.environ.get("ZOOKEEPER_TEST_PORT", 28181)):
+        run()
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

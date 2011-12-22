@@ -1,0 +1,14 @@
+#!/bin/bash
+
+hostname=`unit-get public-address`
+
+app_dir="/var/www/$hostname/"
+app_file=`config-get application_file`
+
+if [ -z $app_file ]; then
+    exit 0
+fi
+
+echo "$app_file" > $app_dir/index.php
+chmod a+r $app_dir/index.php
+

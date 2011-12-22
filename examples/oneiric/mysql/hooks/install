@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -eu # -x for verbose logging to juju debug-log
+
+apt-get install -qqy debconf-utils python-mysqldb pwgen
+
+# Generate a strong password for the mysql service, using /dev/urandom
+PASSWORD=`pwgen 10 1`
+
+# Store the password for later use by the db-relation-changed hook for
+# this service unit. As a general note, for data that service units do
+# not need to share, simply use the machine's local file store.
+echo $PASSWORD >> /var/lib/juju/mysql.passwd
+
+echo mysql-server-5.1 mysql-server/root_password password $PASSWORD | debconf-set-selections
+echo mysql-server-5.1 mysql-server/root_password_again password $PASSWORD | debconf-set-selections
+
+juju-log "mysql-server settings preseeded, now installing via apt-get"
+DEBIAN_FRONTEND=noninteractive apt-get -y install -qq mysql-server
+
+juju-log "Editing my.cnf to allow listening on all interfaces"
+sed --in-place=old 's/127\.0\.0\.1/0.0.0.0/' /etc/mysql/my.cnf
+
+juju-log "Restarting mysql service"
+service mysql restart
